@@ -1,9 +1,13 @@
 import sys
 import json
+import os
+from dotenv import load_dotenv
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QLineEdit, QPushButton, QRadioButton , QVBoxLayout, QHBoxLayout
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QIcon
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
+
+load_dotenv()
 
 
 class WeatherApp(QMainWindow):
@@ -93,10 +97,10 @@ class WeatherApp(QMainWindow):
         self.celsius_button.toggled.connect(lambda: self.get_weather() if self.celsius_button.isChecked() else None)
         self.fahrenheit_button.toggled.connect(lambda: self.get_weather() if self.fahrenheit_button.isChecked() else None)
 
-
+    #Does the request
     def get_weather(self):
 
-        api_key = "OPENWEATHERMAP_API_KEY"
+        api_key = os.getenv("OPENWEATHERMAP_API_KEY", "OPENWEATHERMAP_API_KEY") #Use your own api key and pass it here
         city = self.city_name_input.text()
 
         if not city:
@@ -108,7 +112,7 @@ class WeatherApp(QMainWindow):
         reply = self.network_manager.get(request)
         reply.finished.connect(lambda: self.network_response(reply))
 
-
+    #Checks the response of the request
     def network_response(self, reply: QNetworkReply):
         try:
             if reply.error() != QNetworkReply.NetworkError.NoError:
@@ -142,12 +146,12 @@ class WeatherApp(QMainWindow):
         finally:
             reply.deleteLater()
 
-
+    #To display errors
     def display_error(self, message):
         self.result_label.setStyleSheet("font-size: 30px;")
         self.result_label.setText(message)
 
-
+    #To get temperature data and return it in (Celsius and Fahrenheit)
     def get_temperature(self, data):
         kelvin = data["main"]["temp"]
         if self.celsius_button.isChecked():
@@ -157,7 +161,7 @@ class WeatherApp(QMainWindow):
             temperature_f = (kelvin * 9/5) - 459.67
             return f"{temperature_f:.2f}°F"
 
-
+    #To display specific error occurred
     @staticmethod
     def http_error(status_code):
         match status_code:
@@ -180,19 +184,19 @@ class WeatherApp(QMainWindow):
             case _:
                 return f"HTTP error occurred:\nStatus code: {status_code}"
 
-
+    #Get weather_id
     @staticmethod
     def get_weather_id(data):
         weather_id = data["weather"][0]["id"]
         return weather_id
 
-
+    #Get weather_description
     @staticmethod
     def get_weather_description(data):
         weather_description = data["weather"][0]["description"]
         return weather_description
 
-
+    #Generate emoji based on its weather_id
     @staticmethod
     def get_emoji(weather_id):
 
