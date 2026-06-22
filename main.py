@@ -32,7 +32,7 @@ class WeatherApp(QMainWindow):
 
 
     def initUI(self):
-        self.setWindowIcon(QIcon("weather.png"))
+        self.setWindowIcon(QIcon("weather_icon.png"))
         self.setWindowTitle("Weather App")
         self.setMinimumSize(500, 300)
 
